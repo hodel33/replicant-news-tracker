@@ -1,5 +1,5 @@
 # domain: self-explanatory
-# pages: the url of the pages we wanto to scrape (main page = "/"), written without "https://www."
+# pages: the url of the pages we want to to scrape (main page = "/"), written without the url_start "https://www."
 # url_filter: a filter to find the actual article urls and not random urls to other sites etc
 # url_exclusion: a filter to exclude unwanted urls on the site
 # div_filter: a filter to find the actual text inside the article page

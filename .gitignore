@@ -4,5 +4,5 @@
 /Stuff/*
 *.md
 *.pdf
-*.txt
+scraper_log.txt
 @test.py

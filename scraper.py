@@ -1,10 +1,10 @@
 # Standard modules
-import logging
-import time
-import random as rd
 import re
+import random as rd
+import time
+import logging
 
-# Importing third-party modules -> requirements.txt
+# Third-party modules -> requirements.txt
 import requests
 from bs4 import BeautifulSoup
 

@@ -1,10 +1,14 @@
-from collections import defaultdict
+# Standard modules
+import re
 import logging
 import pandas as pd
-import re
 import sql_mgr as sql
+from collections import defaultdict
 
+# Third-party modules -> requirements.txt
 from country_names import CountryNames
+
+# Custom made modules
 from graph_mgr import GraphManager
 
 
@@ -272,6 +276,7 @@ class ArticleStatistics():
         # Adding together both DFs for both countries with single and multiple names
         df_output = pd.concat([df_singles_result, df_countries_multi])
 
+        # changing the USA + UK names to united states + united kingdom for easier summarizing
         df_output["country"] = df_output["country"].replace({"usa": "united states"})
         df_output["country"] = df_output["country"].replace({"america": "united states"})
         df_output["country"] = df_output["country"].replace({"uk": "united kingdom"})
@@ -282,36 +287,3 @@ class ArticleStatistics():
         df_output = df_output.reset_index(level=0, drop=True)
        
         return df_output
-
-
-#DEBUG
-
-if __name__ == "__main__":
-
-    db = "sql_data.db"
-    st = ArticleStatistics(db)
-    gm = GraphManager() # using the GraphManager() to print charts
-
-    df_top_keywords = st.get_top_kw()
-    print(df_top_keywords)
-    gm.plot_top_kw_graph(df_top_keywords, 100)
-
-    df_top_categories = st.get_top_cats()
-    gm.plot_top_cat_graph(df_top_categories, chart_type="bar")
-    gm.plot_top_cat_graph(df_top_categories, chart_type="pie")
-
-    df_cats_by_date = st.get_cats_by_date()
-    print(df_cats_by_date)
-    gm.plot_cats_by_date_graph(df_cats_by_date)
-
-    df_kws_by_date = st.get_kws_by_date("trump", "thunberg")
-    print(df_kws_by_date)
-    gm.plot_kws_by_date_graph(df_kws_by_date, "trump", "thunberg")
-    
-    df_cats_by_domain = st.get_cats_by_domain()
-    print(df_cats_by_domain)
-    gm.plot_cats_by_domain_graph(df_cats_by_domain)
-
-    df_country_mentions = st.get_country_mentions()
-    print(df_country_mentions)
-    gm.plot_country_mentions_heatmap(df_country_mentions)

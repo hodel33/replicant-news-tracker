@@ -1,6 +1,9 @@
-from spacy.lang.en.stop_words import STOP_WORDS
-from string import punctuation as punc
+# Standard modules
 import re
+from string import punctuation as punc
+
+# Third-party modules -> requirements.txt
+from spacy.lang.en.stop_words import STOP_WORDS
 
 
 class TextProcessor():
@@ -49,11 +52,3 @@ class TextProcessor():
                 if not word[i].isalpha():
                     return False
             return True
-
-
-# DEBUG
-# text = """test@email.com In interviews with Dallas’ 105.3 The Fan and the Dallas Morning News, Irvin said the conversation with the woman lasted between 45 seconds 
-# and one minute. Irvin also said he initially didn’t remember the meeting because stand-up up-stand- -stand -up “I had a few drinks, to tell you the truth.”"""
-
-# tp = TextProcessor()
-# print(tp.text_cleaner(text))
