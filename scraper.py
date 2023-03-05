@@ -36,8 +36,7 @@ class WebScraper():
             raise
 
         print(f"Scraping URL: {url}") if debug_mode else None # DEBUG
-        # print(f"Scraping URL: {url}") # DEBUG
-        # print(f"{response.status_code}\n") # DEBUG
+        print(f"Status code: {response.status_code}") if debug_mode else None # DEBUG
 
         if response.status_code != 200: # the HTML "success" status response code is 200
             logging.info(f"{response.url}\n\nHTTP Status Code: {response.status_code}")
@@ -50,11 +49,7 @@ class WebScraper():
         # if the soup comes back empty (meaning that the there's no such class name) it will go after the "id" attribute name
         if not div:
             div = soup.find("div", id=re.compile(div_filter))
-
-        # print(re.compile(div_filter)) # DEBUG
-        # print(div) # DEBUG
-        # print(div.contents) # DEBUG
-        
+      
         # raise ValueError if we didn't get any text at all
         if not div:
             logging.info(f"{response.url}\n\nInfo: Requested <div> was not found on this page.")
@@ -64,9 +59,7 @@ class WebScraper():
         if not div.text:
             logging.info(f"{response.url}\n\nInfo: The content of the requested <div> was empty.")
             raise ValueError("The content of the requested <div> was empty.")
-
-        # print(div.text) # DEBUG
-       
+      
         paragraphs = div.find_all("p")
 
         print(f"<p> paragraphs: {len(paragraphs)}") if debug_mode else None # DEBUG
@@ -106,7 +99,6 @@ class WebScraper():
             if exclude_check:
                 if p.find(class_=re.compile("exclude")):
                     continue
-            # excl_check = list(p.children)[0] # DEBUG
 
             p_attrs_list = list(p.attrs.values()) # make a more accessable list out of the dict view object (which contains the <p> attributes)
             # an example of how this could look: [['promo-category'], 'category']
@@ -144,7 +136,6 @@ class WebScraper():
             for i in range(1, pagin_amount + 1):
 
                 print(f"--- Pgn level: {i} ---") if debug_mode else None # DEBUG
-                #print(url_pagin) if debug_mode else None # DEBUG
 
                 if page != "/":
                     url_page = f"{url_domain}{page}"
@@ -183,7 +174,7 @@ class WebScraper():
                 if pagin_filter:
                     pagination = soup.find_all("a", re.compile(pagin_filter))
                     if pagination:
-                        #print("\n1st pagination level - <a> re.compile name") if debug_mode else None # DEBUG
+                        print("1st pagination level - <a> re.compile name") if debug_mode else None # DEBUG
 
                         # we want the more/next pagination button so we're going to check for "next" or "more" in the tag attributes
                         for tag in pagination:
@@ -194,12 +185,8 @@ class WebScraper():
                             list_flattened = [element for element in tag_attrs if type(element) is str] # extracting the words in the list
                             final_tag_attrs_list = sublists_flattened + list_flattened # putting these 2 lists together for easier keyword comparison
 
-                            #print(final_tag_attrs_list) if debug_mode else None # DEBUG
-
                             check_next = any("next" in word for word in final_tag_attrs_list)
                             check_more = any("more" in word for word in final_tag_attrs_list)
-                            #print(f"'next': {check_next}") if debug_mode else None # DEBUG
-                            #print(f"'more': {check_more}") if debug_mode else None # DEBUG
 
                             if check_next or check_more:
                                 url_pagin = tag["href"]   
@@ -209,8 +196,7 @@ class WebScraper():
                     if not pagination:
                         pagination = soup.find_all("a", attrs={"aria-label": pagin_filter}) # get the tag pagination info
                         if pagination:
-                            #print(pagination) if debug_mode else None # DEBUG
-                            #print("2nd pagination level - <a> aria-label") if debug_mode else None # DEBUG
+                            print("2nd pagination level - <a> aria-label") if debug_mode else None # DEBUG
                             url_pagin = pagination[0]["href"]
                     
                     # 3rd check - class name and "?" inside it's href
@@ -218,13 +204,12 @@ class WebScraper():
                         pagination = soup.find(class_=pagin_filter) # get the tag pagination info
                         if pagination:
                             pagination = list(pagination.attrs.values()) # get the url for the next page
-                            #print(pagination) if debug_mode else None # DEBUG
                             pagination = [element for element in pagination if type(element) is str if "?" in element] # if there is a "?" in the url
                             if pagination:
-                                #print("3rd pagination level - class name") if debug_mode else None # DEBUG
+                                print("3rd pagination level - class name") if debug_mode else None # DEBUG
                                 url_pagin = pagination[0] # [0] extracting the pagination link
 
-                    #print(f"Before pagin url modification: {url_pagin}") if debug_mode else None # DEBUG
+                    print(f"Before pagin url modification: {url_pagin}") if debug_mode else None # DEBUG
                 
                 ## Modify the pagination link to be able to connect the relative ending to our root domain
                 # we use regular expressions for these tasks. 
@@ -234,9 +219,9 @@ class WebScraper():
 
                     url_pagin = re.sub(r"^.*" + url_page, "", url_pagin) # get the relative pagination link if a full url was scraped
                     
-                    #print(f"Before relative root creation: {url_pagin}") if debug_mode else None # DEBUG
+                    print(f"Before relative root creation: {url_pagin}") if debug_mode else None # DEBUG
                     relative_root = re.sub(r"^.*/", "/", url_page) # get the correct "relative root" extension if the original url has more than just the domain with prefix in the end
-                    #print(f"Relative root: {relative_root}") if debug_mode else None # DEBUG
+                    print(f"Relative root: {relative_root}") if debug_mode else None # DEBUG
 
                     url_pagin = re.sub(relative_root, "", url_pagin) # subtract the original extension from the scraped url to get one we can use with the initial url
 
@@ -280,40 +265,3 @@ class WebScraper():
         final_url_article_links = list(set(final_url_article_links)) # getting rid of possible duplicates thanks to python's "set" data structure
 
         return final_url_article_links
-
-
-## DEBUG
-
-# logging_format = f"------------------\n%(asctime)s\n------------------\n%(message)s\n" # changing the logging format
-# logging.basicConfig(filename="scraper_log.txt", level=logging.INFO, format=logging_format, datefmt="%Y-%m-%d %H:%M") # changing the logging format
-
-# headers = data_init.headers
-# news_sites = data_init.news_sites # the news sites for scraping
-# url = "https://www.bbc.com/news/av/world-africa-64780935"
-
-
-## DEBUG - Individual Article
-
-# scraped_site_name = re.sub(r"^https://(www.)?|[.].*", "", url)
-# site = next(site for site in news_sites if re.sub(r"^https://(www.)?|[.].*", "", site["domain"]) == scraped_site_name)
-
-# div_filter = site["div_filter"]
-# p_attr_exclusion = site["p_attr_exclusion"]
-
-# article_text = WebScraper().TextScraper(headers, url, div_filter, p_attr_exclusion, sleep=True)
-# article_text_cleaned = TextProcessor().text_cleaner(article_text) # using the text_cleaner() to clean the article text
-# print(article_text_cleaned)
-
-
-## DEBUG - Page URLs
-
-# site_no = 13
-# site = news_sites[site_no]
-
-# try:
-#     article_urls_per_site = WebScraper().URLScraper(headers, site["domain"], site["pages"], site["url_filter"], site["url_exclusion"], site["pagin_filter"], pagin_amount=1)
-# except:
-#     pass
-
-# for url in article_urls_per_site:
-#     print(url)

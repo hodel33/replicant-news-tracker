@@ -1,9 +1,9 @@
 # Standard modules
 import os
 import re
-import string
 import sqlite3
 import logging
+import pandas as pd
 from datetime import datetime
 from collections import defaultdict
 from itertools import zip_longest
@@ -56,7 +56,36 @@ class NewsScraper():
                 for keyword in keywords_list:          
                     sql.execute(self.db, f"INSERT INTO keywords (keyword, category_id) VALUES ('{keyword}', {cat_id_fetch})")
 
+
+    def validate_user_input(self, word: str) -> bool:
+        """
+        Check if a keyword/compound keyword is valid. 
+        Only alphabetical characters, hyphens "-" and whitespaces " " in between the word(s) are allowed.
+        """
+        # Remove whitespace at the beginning and end of the word
+        word = word.strip()
     
+        # Check if the word contains only alphabetical characters, hyphens, or whitespace
+        return all(char.isalpha() or char == '-' or char.isspace() for char in word)
+            
+
+    def fetch_cat_kw_from_db(self) -> dict:
+        '''Fetch the stored identifiers (keyword/categories) from the database'''
+
+        # fetch the stored identifiers (keyword/categories) from the database
+        db_cat_kw = sql.execute(self.db, """
+                            SELECT category, kw.keyword FROM categories
+                            LEFT JOIN keywords kw ON category_id = categories.id;""")
+                             
+        # importing the identifiers (keyword/categories) into a pandas DataFrame for easier manipulation
+        df_cat_kw = pd.DataFrame(db_cat_kw, columns=["category", "keyword"])
+
+        # making a dict from that pandas DataFrame
+        dict_cat_kw = df_cat_kw.groupby("category")["keyword"].apply(list).to_dict()
+
+        return dict_cat_kw
+
+
     def main(self):
 
         menu_loop = True
@@ -65,7 +94,7 @@ class NewsScraper():
 
             os.system(self.clear_terminal)
             self.print_main_menu()
-            input_choice = input("Please select an option: ")
+            input_choice = input(f"    Please select an option: ")
 
             if input_choice.lower() == "q":
                 exit()
@@ -80,13 +109,13 @@ class NewsScraper():
                 if stored_articles_count != 0:
                     self.page_analyze()
                 else:
-                    input(f"\nNothing to analyze (0 articles in db). Please scrape sites and try again.")
+                    input(f"\n    Nothing to analyze (0 articles in db). Please scrape sites and try again.")
 
             elif input_choice == str(1 + self.menu_system["MAIN MENU"].index("Edit identifiers")):
                 self.page_identifiers()
 
             else: # if the user failed to input one of the valid menu options
-                input("\nInvalid menu option. Press ENTER to try again: ")
+                input("\n    Invalid menu option. Press ENTER to try again: ")
 
 
     def print_main_header(self):
@@ -100,6 +129,7 @@ class NewsScraper():
     © 2023 Hodel33
     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾''')
         print(f"\033[0;0m") # resets the color + new line after showing the whole list
+
 
     def print_main_menu(self):
 
@@ -136,8 +166,9 @@ class NewsScraper():
             self.scrape_all_sites(pagin_amount=input_pagin_amount, debug_mode=False)
 
             print(f"\n")
-            input(f"Press ENTER to Return to Main Menu: ")
+            input(f"    Press ENTER to Return to Main Menu: ")
     
+
     def page_analyze(self):
 
         # analyze data and plot charts
@@ -157,7 +188,7 @@ class NewsScraper():
                     print(f"    [{i+1}] - {menu_item}")
 
                 print(f"\n    [q] - Return to Main menu\n\n")
-                input_choice = input("Please select an option: ")
+                input_choice = input(f"    Please select an option: ")
 
             if input_choice.lower() == "q":
                 break
@@ -198,21 +229,17 @@ class NewsScraper():
                     input("\n    Invalid option. Press ENTER to try again: ")
                     continue
 
-                # user input validation check
-                valid_input_check = True
-                for part in keyword_1.split("-"):
-                    if not part.isalpha():
-                        valid_input_check = False
-                        break
+                kw_1_valid_input_check = True
+                kw_2_valid_input_check = True
+
+                # user input validation check (only alphabetical characters, hyphens "-" and whitespaces " " in between the word(s) are allowed.)
+                kw_1_valid_input_check = self.validate_user_input(keyword_1)
 
                 if kw_mode == "2":
-                    for part in keyword_2.split("-"):
-                        if not part.isalpha():
-                            valid_input_check = False
-                            break
-                
-                if valid_input_check == False:
-                    input("\n    Invalid keyword(s). Only alphabetical characters and '-' (compound word separator) are valid. Press ENTER to try again: ")
+                    kw_2_valid_input_check = self.validate_user_input(keyword_2)
+
+                if kw_1_valid_input_check == False or kw_2_valid_input_check == False:
+                    input("\n    Invalid keyword(s). Only alphabetical characters, dashes '-' and whitespace ' ' in between the word(s) are valid. Press ENTER to try again: ")
                     continue
 
                 print(f"    ________________________________________")
@@ -315,9 +342,12 @@ class NewsScraper():
                 sub_page_active = False
 
             else: # if the user failed to input one of the valid menu options
-                input("\nInvalid menu option. Press ENTER to try again: ")
+                input("\n    Invalid menu option. Press ENTER to try again: ")
+
 
     def page_identifiers(self):
+
+        sub_page_active = False
 
         while True:
 
@@ -325,26 +355,135 @@ class NewsScraper():
             self.print_main_header()
             print(f"    // EDIT IDENTIFIERS\n")
 
-            for i, menu_item in enumerate(self.menu_system["EDIT IDENTIFIERS"]):
-                print(f"    [{i+1}] - {menu_item}")
+            if sub_page_active == False:
+                for i, menu_item in enumerate(self.menu_system["EDIT IDENTIFIERS"]):
+                    print(f"    [{i+1}] - {menu_item}")
 
-            print(f"\n    [q] - Return to Main menu\n\n")
-            input_choice = input(f"Press ENTER to Return to Main Menu: ")
+                print(f"\n    [q] - Return to Main menu\n\n")
+                input_choice = input(f"    Please select an option: ")
 
             if input_choice.lower() == "q":
                 break
 
             elif input_choice == str(1 + self.menu_system["EDIT IDENTIFIERS"].index("Show keywords/categories")):
-                pass
+                if sub_page_active == False:
+                    sub_page_active = True
+                    continue
+
+                print(f"    ________________________________________")
+                print(f"    Listing stored keywords & categories:")
+                print(f"    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+                
+                # fetch the stored identifiers (keyword/categories) from the database
+                dict_cat_kw = self.fetch_cat_kw_from_db() # returns a dict
+
+                # maximum amount of keywords per row for a nice print
+                max_kws_per_row = 10
+
+                # loop over the dictionary and print out the categories and keywords
+                for category, keywords in dict_cat_kw.items():
+                    
+                    print(f"    {category.title()}:") # print the category name in title case
+
+                    if keywords == [None]:
+                        print(f"    ''")
+
+                    else:
+                        # print the keywords in groups of {max_kws_per_row}
+                        for i in range(0, len(keywords), max_kws_per_row):
+                            print(" " * 4, end="")
+                            print(" ".join(f"'{kw}'" for kw in keywords[i:i+max_kws_per_row]))
+                    print()
+
+                print(f"")
+                input(f"    Press ENTER to continue: ")
+                sub_page_active = False
 
             elif input_choice == str(1 + self.menu_system["EDIT IDENTIFIERS"].index("Add keyword/category")):
-                pass
+                if sub_page_active == False:
+                    sub_page_active = True
+                    continue
+              
+                # fetch the stored identifiers (keyword/categories) from the database
+                dict_cat_kw = self.fetch_cat_kw_from_db() # returns a dict
+
+                cat_kw_mode = input("\n    Add a new Category (1) or Keyword (2): ")
+
+                cat_valid_input_check = True
+                kw_valid_input_check = True
+
+                # add new Category
+                if cat_kw_mode == "1":
+                    
+                    new_category = input("\n    Please type in the new Category: ").lower().strip()
+
+                    if new_category in dict_cat_kw:
+                        input(f"\n    Category '{new_category}' already exists in the database. Press ENTER to try again: ")
+                        continue
+
+                    cat_valid_input_check = self.validate_user_input(new_category)
+
+                    if cat_valid_input_check == False:
+                        input("\n    Invalid Category name. Only alphabetical characters, dashes '-' and whitespace ' ' in between the word(s) are valid. Press ENTER to try again: ")
+                        continue
+
+                    sql.execute(self.db, f"DELETE FROM `sqlite_sequence` WHERE `name` = 'categories';") # reset the AUTOINCR sequence before inserting, so we get the next number
+                    sql.execute(self.db, f"INSERT INTO categories (category) VALUES ('{new_category}');") # inserting the new category
+
+                    print()
+                    print(f"    Stored the new category '{new_category}' in the database.")
+                    print(f"\n")
+                    input(f"    Press ENTER to continue: ")
+
+                # add new Keyword
+                elif cat_kw_mode == "2":
+
+                    # category name
+                    cat_select = input("\n    Please choose which category the new keyword should be added to: ").lower().strip()
+
+                    if cat_select not in dict_cat_kw:
+                        input(f"\n    Category '{cat_select}' doesn't exist in the database. Press ENTER to try again: ")
+                        continue
+
+                    #category index
+                    cat_select_index = sql.execute(self.db, f"SELECT id FROM categories WHERE category = '{cat_select}';")
+                    cat_select_index = cat_select_index[0][0]
+
+                    new_keyword = input("    Please type in the new Keyword: ").lower().strip()
+
+                    flat_kw_list = [keyword for sublist in dict_cat_kw.values() for keyword in sublist] # flatten the dict of nested dicts so we get one list with all keywords
+
+                    if new_keyword in flat_kw_list:
+                        input(f"\n    Keyword '{new_keyword}' already exists in the database. Press ENTER to try again: ")
+                        continue
+                    
+                    # user input validation check (only alphabetical characters, hyphens "-" and whitespaces " " in between the word(s) are allowed.)
+                    # add new Keyword check
+                    kw_valid_input_check = self.validate_user_input(new_keyword)
+
+                    if kw_valid_input_check == False:
+                        input("\n    Invalid Keyword name. Only alphabetical characters, dashes '-' and whitespace ' ' in between the word(s) are valid. Press ENTER to try again: ")
+                        continue
+
+                    sql.execute(self.db, f"DELETE FROM `sqlite_sequence` WHERE `name` = 'keywords';") # reset the AUTOINCR sequence before inserting, so we get the next number
+                    sql.execute(self.db, f"INSERT INTO keywords (keyword, category_id) VALUES ('{new_keyword}', {cat_select_index});") # inserting the new keyword
+
+                    print()
+                    print(f"    Stored the new keyword '{new_keyword}' to category '{cat_select}' in the database.")
+                    print(f"\n")
+                    input(f"    Press ENTER to continue: ")
+                
+                else:
+                    input("\n    Invalid option. Press ENTER to try again: ")
+                    continue
+
+                sub_page_active = False
 
             elif input_choice == str(1 + self.menu_system["EDIT IDENTIFIERS"].index("Delete keyword/category")):
                 pass
 
             else: # if the user failed to input one of the valid menu options
-                input("\nInvalid menu option. Press ENTER to try again: ")
+                input("\n    Invalid menu option. Press ENTER to try again: ")
 
     def scrape_all_sites(self, pagin_amount: int = 1, debug_mode: bool = False):
 
@@ -356,9 +495,6 @@ class NewsScraper():
         # fetch page urls
         for i, site in enumerate(self.news_sites):
 
-            # DEBUG
-            # if site["domain"] == "apnews.com" or site["domain"] == "huffpost.com":
-
             print(f"    Scraping {site['domain']} ({i+1}/{total_amount_of_sites} sites)..")
 
             article_urls_per_site = self.ws.URLScraper(self.headers, site["domain"], site["pages"], site["url_filter"], 
@@ -366,7 +502,6 @@ class NewsScraper():
             
             all_scraped_articles.append(article_urls_per_site)
 
-        
         # check which article urls we've already scraped from the sql database and store it in a defaultdict for quicker access
         stored_articles = defaultdict(lambda: None) # setting the default value to "None" when creating keys
         for url in [url[0] for url in sql.execute(self.db, "SELECT url FROM articles;")]:
@@ -375,8 +510,6 @@ class NewsScraper():
         # create a new list with only fresh new article urls, which we haven't scraped before
         new_article_urls = [[url for url in urls if url not in stored_articles] for urls in all_scraped_articles]
       
-        #print(new_article_urls) # DEBUG
-
         new_articles = []
         prev_url = ""
         date = str(datetime.now().date()) # save the date together with the article url + text
@@ -394,9 +527,6 @@ class NewsScraper():
 
                     # matching filters for which web site we're trying to scrape
                     scraped_domain = re.sub(r"^https://(www.)?|/.*", "", url)
-
-                    # print(url) # DEBUG
-                    # print(scraped_domain) # DEBUG
 
                     site = next(site for site in self.news_sites if re.sub(r"^https://|/.*", "", site["domain"]) == scraped_domain)
 
@@ -424,8 +554,6 @@ class NewsScraper():
         # saving newly scraped articles to the sql database
         for article in new_articles:
 
-            # print(article) # DEBUG
-
             sql.execute(self.db, 
             f"""INSERT INTO articles
             (url, scrape_date, content)
@@ -434,15 +562,6 @@ class NewsScraper():
         print()
         print(f"    Stored {len(new_articles)} new article(s) in the database.")
         
-# REMOVE
-
-## inserting info
-# sql.execute(f"INSERT INTO categories (category) VALUES ('TESTING TESTING')")
-
-## fetching info
-# data = sql.execute("SELECT * FROM articles")
-# print(data)
-
 
 if __name__ == "__main__":
     logging_format = f"------------------\n%(asctime)s\n------------------\n%(message)s\n" # changing the logging format

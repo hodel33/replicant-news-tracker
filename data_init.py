@@ -72,7 +72,7 @@ db_categories_keywords = {
 
     "sports": ["football", "basketball", "athletics", "olympics", "tennis", "golf", "baseball", "rugby", "cricket", "hockey", "volleyball", "boxing", "wrestling", "snooker", 
     "table tennis", "gymnastics", "swimming", "marathon", "triathlon", "racing", "snow sports", "championships", "motor sports", "ufc", "mma", "winter sports", "water sports", 
-    "extreme sports", "skiing", "formula 1", "horse racing", "nfl", "nba", "epl", "premier league", "world cup", "world series", "soccer", "athlete", "athletes"],
+    "extreme sports", "skiing", "formula", "horse racing", "nfl", "nba", "epl", "premier league", "world cup", "world series", "soccer", "athlete", "athletes"],
 
     "entertainment": ["movies", "movie" "music", "television", "celebrities", "celebrity", "theater", "awards", "gaming", "books", "comics", "dance", "circus", "magic", "beauty",
     "stand-up comedy", "musical theater", "fashion",  "gossip", "media", "animation", "video games", "music festivals", "film festivals", "cinema", "hollywoord", "viral video", "opera",
@@ -91,7 +91,7 @@ db_categories_keywords = {
     "meteorology", "atmosphere", "solar energy", "wind energy", "extreme temperatures", "drought", "natural disaster", "wildfires", "fossil fuel", "sustainable energy",
     "gas emissions", "carbon emissions", "earthquake", "polar ice", "antarctic sea ice", "flooding", "cyclone", "clean energy", "wildlife conservation", "climate"],
 
-    "science": ["research", "discovery", "astronomy", "astronomers" "biology", "chemistry", "physics", "mathematics", "engineering", "geology", "botany", "zoology", "oceanography", 
+    "science": ["research", "discovery", "astronomy", "astronomers", "biology", "chemistry", "physics", "mathematics", "engineering", "geology", "botany", "zoology", "oceanography", 
     "paleontology", "microbiology", "neuroscience", "genetics", "palaeontology", "quantum mechanics", "nanotechnology", "particle physics", "astrobiology", "astrophysics", "orbit",
     "universe", "galaxy", "galaxies", "light-years", "particle accelerator", "nuclear physics", "biochemistry", "evolutionary", "virology", "science", "nasa", "esa", "satellite"]
 }
