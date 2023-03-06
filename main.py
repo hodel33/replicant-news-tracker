@@ -485,7 +485,8 @@ class NewsScraper():
             else: # if the user failed to input one of the valid menu options
                 input("\n    Invalid menu option. Press ENTER to try again: ")
 
-    def scrape_all_sites(self, pagin_amount: int = 1, debug_mode: bool = False):
+
+    def scrape_all_sites(self, pagin_amount: int = 1, debug_mode: bool = False, batch: bool = False):
 
         article_urls_per_site = []
         all_scraped_articles = []
@@ -561,6 +562,14 @@ class NewsScraper():
 
         print()
         print(f"    Stored {len(new_articles)} new article(s) in the database.")
+
+        # if run from batch script - save the amount stored to a file
+        if batch:
+            now = datetime.now()
+            scheduled_message = f"Stored {len(new_articles)} new article(s) in the database."
+            scheduled_format = f"------------------\n{now.strftime('%Y-%m-%d %H:%M')}\n------------------\n{scheduled_message}\n\n"
+            with open("scheduled_scraper.txt", "a") as file:
+                    file.write(scheduled_format)
         
 
 if __name__ == "__main__":
