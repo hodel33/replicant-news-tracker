@@ -159,10 +159,6 @@ class NewsScraper():
                 continue
             user_validation_error = False
 
-            print(f"    ________________________________________")
-            print(f"    Scraping sites (pgn level {input_pagin_amount}):")
-            print(f"    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
-
             self.scrape_all_sites(pagin_amount=input_pagin_amount, debug_mode=False)
 
             print(f"\n")
@@ -490,8 +486,13 @@ class NewsScraper():
 
         article_urls_per_site = []
         all_scraped_articles = []
-
         total_amount_of_sites = len(self.news_sites)
+
+        
+        print(f"    ________________________________________")
+        print(f"    Scraping sites (pgn level {pagin_amount}):")
+        print(f"    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+
 
         # fetch page urls
         for i, site in enumerate(self.news_sites):
