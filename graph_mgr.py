@@ -172,7 +172,7 @@ class GraphManager():
             # Save the chart as an HTML file
             dirname = self.export_dir
             file_ext = self.file_ext
-            filename = f"keyword_by_date_graph"
+            filename = f"custom_keyword_by_date_graph"
             template_style = f"_{template}"
             file_path = f"{dirname}{filename}{template_style}{file_ext}"
             pyo.plot(fig, filename=file_path, auto_open=False)
