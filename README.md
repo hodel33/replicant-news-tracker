@@ -3,7 +3,7 @@
 
 ## 📋 Overview
 
-Replicant-News-Tracker is a terminal-based app designed to provide insightful analytics from various news sources. It scrapes news articles, processes the textual data by removing stopwords and punctuations, and stores the refined content in an SQLite database. Utilizing Python's data analysis and visualization libraries, the application generates meaningful charts to offer valuable insights into the news landscape.
+Replicant News Tracker is a terminal-based app designed to provide insightful analytics from various news sources. It scrapes news articles, processes the textual data by removing stopwords and punctuations, and stores the refined content in an SQLite database. Utilizing Python's data analysis and visualization libraries, the application generates meaningful charts to offer valuable insights into the news landscape.
 
 ### Key Features
 
