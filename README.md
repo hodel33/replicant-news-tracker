@@ -19,6 +19,7 @@ Replicant News Tracker is a terminal-based app designed to provide insightful an
 - **Error Handling/Logging:** Features robust error-handling mechanisms including exponential backoff in its retry logic for efficient handling of transient errors and rate limits. Additionally, meaningful errors and logs are generated for exceptional situations.
 - **User-friendly Interface:** Easy-to-use command-line interface (CLI) integrated with custom-designed real-time progress bars, thanks to the tqdm package. These progress bars are tailored to match the CLI design and are visible during all scraping activities, chart generation, and data calculations, elevating the overall user experience.
 
+<br>
 
 ## ⚙️ Installation
 
@@ -55,7 +56,8 @@ Replicant News Tracker is a terminal-based app designed to provide insightful an
    ```bash
    python main.py
    ```
-
+   
+<br>
 
 ## 🏃‍♂️ Usage (Running the app)
 
@@ -126,6 +128,7 @@ After launching the application, you'll be greeted by the main menu where you ca
 
 ![Edit Identifiers Screenshot 2](readme_screens/edit_identifiers_2.png)
 
+<br>
 
 ## 🔧 Usage (Configuration)
 
@@ -155,6 +158,7 @@ The scraper is highly configurable and designed to work with multiple news outle
 - **p_attr_exclusion**: A list of HTML classes or IDs to exclude when scraping the article content. Useful for ignoring paragraphs that contain advertisements, promotional links, or other non-relevant information.
 - **pagin_filter**: A filter to identify pagination links on the web page. The scraper first attempts to find a match using a regular expression. If that fails, it looks for an "aria-label" attribute in the "a" tag. Finally, if both methods fail, it looks for a class name that contains a "?" in its href attribute.
 
+<br>
 
 ## 🔄 Usage (Batch run)
 
@@ -205,6 +209,7 @@ ns = NewsScraper()
 ns.scrape_all_sites(pagin_amount=5, debug_mode=False, batch=True)
 ```
 
+<br>
 
 ## ❗ Troubleshooting
 
@@ -245,6 +250,7 @@ Example:
 **Issue**: Scheduled scraping runs are not executing.  
 **Solution**: Confirm that the batch files are set up correctly and that you have the required permissions to execute them.
 
+<br>
 
 ## 📜 License
 
@@ -258,6 +264,7 @@ This project is licensed under a Custom License - see the [LICENSE](LICENSE) fil
 
 For the full license, please refer to the [LICENSE](LICENSE) file in the repository.
 
+<br>
 
 ## 💬 Feedback & Contact
 
