@@ -1,16 +1,12 @@
 # Standard modules
 import re
-import logging
 import pandas as pd
 from tqdm import tqdm
 import sqlite_x33 as sql
 from collections import defaultdict
 
-# Third-party modules -> requirements.txt
-from country_names import CountryNames
-
 # Custom made modules
-from graph_mgr import GraphManager
+from country_names import CountryNames
 
 
 class ArticleStatistics():
