@@ -16,17 +16,19 @@ news_sites = [
 
 {"domain": "news.com.au", "pages": ["/national", "/world"], "url_filter": r"news-story", "url_exclusion": [r"/video/"], "div_filter": r"story-primary", "p_attr_exclusion": [], "pagin_filter": ""},
 {"domain": "aljazeera.com", "pages": ["/", "/middle-east"], "url_filter": r"/\d+/\d+/\d+/", "url_exclusion": [r"/gallery/", r"/liveblog/", r"/program/", r"/opinions/"], "div_filter": r"wysiwyg", "p_attr_exclusion": [], "pagin_filter": ""},
-{"domain": "latimes.com", "pages": ["/", "/world-nation"], "url_filter": r"/story/", "url_exclusion": [], "div_filter": r"rich-text-article-body-content", "p_attr_exclusion": ["promo"], "pagin_filter": "button load-more-button"},
+{"domain": "latimes.com", "pages": ["/", "/world-nation"], "url_filter": r"/story/", "url_exclusion": [], "div_filter": r"story", "p_attr_exclusion": ["promo"], "pagin_filter": "button load-more-button"},
 {"domain": "vox.com", "pages": ["/", "/world-politics"], "url_filter": r"/\d+/\d+/\d+/", "url_exclusion": ["/videos/", "/podcasts/"], "div_filter": r"c-entry-content", "p_attr_exclusion": ["c-article", "amount", "contributed", "c-read-more"], "pagin_filter": "c-pagination"},
-{"domain": "economist.com", "pages": ["/international"], "url_filter": r"/\d+/\d+/\d+/", "url_exclusion": [r"/interactive/"], "div_filter": r"css-13gy2f5", "p_attr_exclusion": [], "pagin_filter": "ds-pagination__nav-link"},
 {"domain": "bbc.com", "pages": ["/news", "/news/world"], "url_filter": r"-\d+$", "url_exclusion": [r"/av/", r"/live/"], "div_filter": r"root", "p_attr_exclusion": ["PromoHeadline"], "pagin_filter": ""},
 {"domain": "independent.co.uk", "pages": ["/", "/news/world"], "url_filter": r"-b\d+\.html", "url_exclusion": [r"/tv/"], "div_filter": r"main", "p_attr_exclusion": ["sc-qsla4c-4", "sc-5ejiri-5"], "pagin_filter": ""},
 {"domain": "theguardian.com", "pages": ["/uk-news", "/world"], "url_filter": r"/\d+/[a-z]+/\d+/", "url_exclusion": [r"/live/", r"/gallery/", r"/video/"], "div_filter": r"maincontent", "p_attr_exclusion": ["ohmn7a", "1613jw2", "EmailSignup"], "pagin_filter": ""},
-{"domain": "mg.co.za", "pages": ["/section/africa", "/section/world"], "url_filter": r"/world/\d+-\d+-\d+-", "url_exclusion": [r"in-brief-a-review"], "div_filter": r"tdc-content-wrap", "p_attr_exclusion": [], "pagin_filter": "next-page"},
+{"domain": "mg.co.za", "pages": ["/section/africa", "/section/world"], "url_filter": r"/world/\d+-\d+-\d+-", "url_exclusion": [r"in-brief-a-review"], "div_filter": r"entry-content", "p_attr_exclusion": [], "pagin_filter": ""},
 {"domain": "usatoday.com", "pages": ["/", "/news/nation", "/news/world"], "url_filter": r"/story/", "url_exclusion": [r"/videos/"], "div_filter": r"truncationWrap", "p_attr_exclusion": [], "pagin_filter": ""},
 {"domain": "buenosairesherald.com", "pages": ["/", "/world"], "url_filter": r"[.]com.{33}", "url_exclusion": [r"/wp-content/", r"/wp-json/", r"//fonts"], "div_filter": r"post-entry", "p_attr_exclusion": [], "pagin_filter": "next page-numbers"},
 
 ]
+
+# Not free anymore. Started a paid subscription service:
+# {"domain": "economist.com", "pages": ["/international"], "url_filter": r"/\d+/\d+/\d+/", "url_exclusion": [r"/interactive/"], "div_filter": r"css-13gy2f5", "p_attr_exclusion": [], "pagin_filter": "ds-pagination__nav-link"},
 
 # "requests" header info minimizes the chance of being banned by the site, since we're simulating a real browser
 headers = {
@@ -50,6 +52,11 @@ db_tables = [
             scrape_date DATETIME, 
             content TEXT);"""
     ,
+        """CREATE TABLE IF NOT EXISTS exclude_articles (
+            url TEXT PRIMARY KEY,
+            reason TEXT);
+        """
+    ,
         """CREATE TABLE IF NOT EXISTS categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             category TEXT);"""
@@ -57,7 +64,12 @@ db_tables = [
         """CREATE TABLE IF NOT EXISTS keywords (
         keyword TEXT PRIMARY KEY,
         category_id INT,
-        FOREIGN KEY (category_id) REFERENCES categories(id));"""
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE);"""
+    ,
+        """CREATE TABLE IF NOT EXISTS scrape_que (
+        url TEXT PRIMARY KEY,
+        scrape_time DATETIME,
+        scrape_retries INT);"""
     ]
 
 # initializing categories and keywords for the database

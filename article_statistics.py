@@ -2,7 +2,8 @@
 import re
 import logging
 import pandas as pd
-import sql_mgr as sql
+from tqdm import tqdm
+import sqlite_x33 as sql
 from collections import defaultdict
 
 # Third-party modules -> requirements.txt
@@ -36,6 +37,10 @@ class ArticleStatistics():
         # saving separate lists for country names - 1 for full info, 1 for single country names and 1 for multiple country names
         self.countries = [(country.lower(), data['iso3']) for country, data in CountryNames().get_dict().items()]
         self.countries_multi = [(country.lower(), data['iso3']) for country, data in CountryNames().get_dict().items() if " " in country]
+
+        # custom tqdm loading bar format
+        self.custom_bar = "    [{bar:30}] {percentage:3.0f}%  "
+        tqdm.pandas(bar_format=self.custom_bar, ascii=" =", leave=False)
 
 
     def _classify_text(self, text) -> str:
@@ -84,14 +89,14 @@ class ArticleStatistics():
 
         ## Phrase hits (multiple keywords) - counting phrase hits in all articles.
         phrases_hit_count = defaultdict(int)
-        for article in self.df_articles["text"]:
+        for article in tqdm(self.df_articles["text"], bar_format=self.custom_bar, ascii=" =", leave=False):
             for phrase, _ in self.phrase_kw:
                 phrases_hit_count[phrase] += len(re.findall(phrase, article))
         df_phrases_hits = pd.DataFrame(phrases_hit_count.items(), columns=["phrase", "count"])
 
         ## Single keyword hits - counting unique words in all articles.
         words_count = defaultdict(int)
-        for word in self.articles_words_list:
+        for word in tqdm(self.articles_words_list, bar_format=self.custom_bar, ascii=" =", leave=False):
             words_count[word] += 1
         df_all_articles_words_count = pd.DataFrame(words_count.items(), columns=["word", "count"])
 
@@ -120,7 +125,7 @@ class ArticleStatistics():
         """Counts articles per category and groups by date."""
 
         categorized_articles = defaultdict(int)
-        for article in self.df_articles["text"]:
+        for article in tqdm(self.df_articles["text"], bar_format=self.custom_bar, ascii=" =", leave=False):
 
             main_category = self._classify_text(article) # Run _classify_text on the article, getting the most prominent category for the article.
             categorized_articles[main_category] += 1
@@ -140,7 +145,7 @@ class ArticleStatistics():
         df_articles = self.df_articles[["date", "text"]]
         
         # Run the text classifier on each article and add the main category to the new "label" column.
-        df_articles["category"] = df_articles["text"].apply(self._classify_text)
+        df_articles["category"] = df_articles["text"].progress_apply(self._classify_text)
 
         # This line of code groups the DataFrame df_articles by two columns, 'date' and 'category', 
         # and then size() calculates the number of occurrences of each combination of the 'date' and 'category' columns
@@ -179,8 +184,11 @@ class ArticleStatistics():
             df_kws_per_date[keyword_2] = 0
             kw_2_count = defaultdict(int)
 
+        total_articles = len(self.df_articles["text"])
+
         if search_for_2_kws == False:
-            for i, article in enumerate(self.df_articles["text"]):
+
+            for i, article in tqdm(enumerate(self.df_articles["text"]), total=total_articles, bar_format=self.custom_bar, ascii=" =", leave=False):
 
                 # run _count_occurences on the article text, getting the amount of keyword occurences
                 kw_1_count = self._count_occurences(article, kw_1) 
@@ -189,7 +197,8 @@ class ArticleStatistics():
                 df_kws_per_date.loc[i, keyword_1] = kw_1_count["kw_count"]
         
         else:
-            for i, article in enumerate(self.df_articles["text"]):
+
+            for i, article in tqdm(enumerate(self.df_articles["text"]), total=total_articles, bar_format=self.custom_bar, ascii=" =", leave=False):
 
                 # run _count_occurences on the article text, getting the amount of keyword occurences
                 kw_1_count = self._count_occurences(article, kw_1) 
@@ -216,9 +225,12 @@ class ArticleStatistics():
 
     def get_cats_by_domain(self) -> pd.DataFrame:
         """Counts articles per category and group by domain."""
-        
+
+        # Calculate the total number of articles for tqdm's total parameter
+        total_articles = len(self.df_articles)
+      
         categorized_articles = defaultdict(lambda: defaultdict(int))
-        for url, article in zip(self.df_articles["url"], self.df_articles["text"]):
+        for url, article in tqdm(zip(self.df_articles["url"], self.df_articles["text"]), total=total_articles, bar_format=self.custom_bar, ascii=" =", leave=False):
             main_category = self._classify_text(article)
             domain = re.sub(r"^https://(www.)?|/.*", "", url)
             categorized_articles[domain][main_category] += 1
@@ -249,7 +261,7 @@ class ArticleStatistics():
         ## Countries with multiple names - counting hits in all articles
         # Countries (iso3) with multiple names - counting mentions in all articles.
         country_multi_count = defaultdict(int)
-        for article in self.df_articles["text"]:
+        for article in tqdm(self.df_articles["text"], bar_format=self.custom_bar, ascii=" =", leave=False):
             for country, iso3 in self.countries_multi:
                 pattern = fr"\b{country}\b"
                 country_multi_count[iso3] += len(re.findall(pattern, article))
@@ -264,7 +276,7 @@ class ArticleStatistics():
         ## Countries with single names - counting hits in all articles
         # Counting unique words in all articles.
         words_count = defaultdict(int)
-        for word in self.articles_words_list:
+        for word in tqdm(self.articles_words_list, bar_format=self.custom_bar, ascii=" =", leave=False):
             words_count[word] += 1
         df_all_articles_words_count = pd.DataFrame(words_count.items(), columns=["word", "count"])
 
@@ -287,3 +299,31 @@ class ArticleStatistics():
         df_output = df_output.reset_index(level=0, drop=True)
        
         return df_output
+    
+
+    def get_detailed_statistics(self):
+
+        # Dictionary to hold the results
+        result = {}
+        
+        # Total Number of Scraped Articles
+        total_articles = len(self.df_articles)
+        result['total_articles'] = total_articles
+        
+        # Number of Actual Scraping Days
+        unique_scrape_days = len(set(sql.execute(self.db, "SELECT DISTINCT scrape_date FROM articles;")))
+        result['unique_scrape_days'] = unique_scrape_days
+        
+        # Scraping Time Period
+        time_period_data = sql.execute(self.db, "SELECT MIN(scrape_date), MAX(scrape_date) FROM articles;")
+        min_date, max_date = time_period_data[0]
+        result['time_period'] = {'from_date': min_date, 'to_date': max_date}
+        
+        # Articles per Domain
+        articles_per_domain = defaultdict(int)
+        for url in self.df_articles["url"]:
+            domain = re.search(r'https?://([A-Za-z_0-9.-]+).*', url).group(1)
+            articles_per_domain[domain] += 1
+        result['articles_per_domain'] = articles_per_domain
+
+        return result

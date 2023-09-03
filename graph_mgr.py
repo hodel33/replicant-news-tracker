@@ -1,6 +1,8 @@
 # Standard modules
 import os
 import pandas as pd
+from tqdm import tqdm
+import itertools
 
 # Third-party modules -> requirements.txt
 import plotly.express as px
@@ -24,6 +26,10 @@ class GraphManager():
         if not os.path.exists(self.export_dir):
             os.mkdir(self.export_dir)
 
+        # custom tqdm loading bar format
+        self.custom_bar = "    [{bar:30}] {percentage:3.0f}%  "
+        tqdm.pandas(bar_format=self.custom_bar, ascii=" =", leave=False)
+
 
     def plot_top_kw_graph(self, df: pd.DataFrame, top_n: int = 20) -> list:
         '''Prints an interactive graph of the top keywords and how many times they occur in the articles'''
@@ -37,6 +43,7 @@ class GraphManager():
         saved_files = []
 
         for template in self.plot_templates:
+
             # Customize the layout
             fig.update_layout(
                 title = f"Top {top_n} Keywords - Total amount of occurences in the articles",
@@ -75,7 +82,12 @@ class GraphManager():
         
         saved_files = []
         
-        for template in self.plot_templates:
+        # Calculate the total number of exports for tqdm
+        tot_exports = len(self.plot_templates) * len(["bar", "pie"])
+
+        # Wrap the loop with tqdm
+        for template in tqdm(self.plot_templates, total=tot_exports, bar_format=self.custom_bar, ascii=" =", leave=False):
+
             # Customize the layout
             fig.update_layout(
                 template=template
@@ -100,13 +112,18 @@ class GraphManager():
         x_value = df.index
 
         # plot the chart using Plotly Express
-        fig = px.line(df, x=x_value, y="count", color="category", markers=False,
+        fig = px.scatter(df, x=x_value, y="count", color="category", 
                 labels={"date": "Date (scrape date)", "count": "Article Count", "category": "Category"},
                 title="Top Categories per Date (scrape date) - Total amount of categorized articles")
         
         saved_files = []
-        
-        for template in self.plot_templates:
+
+        # Calculate the total number of exports for tqdm
+        tot_exports = len(self.plot_templates)
+
+        # Wrap the loop with tqdm
+        for template in tqdm(self.plot_templates, total=tot_exports, bar_format=self.custom_bar, ascii=" =", leave=False):
+
             fig.update_layout(template = template)
 
             # Save the chart as an HTML file
@@ -129,7 +146,7 @@ class GraphManager():
         # plot the chart using Plotly Express
         if kw_2 == "": # in case only 1 keyword is used
 
-            fig = px.line(df, x=x_value, y=kw_1, markers=False, 
+            fig = px.scatter(df, x=x_value, y=kw_1, 
                     labels={"date": "Date (scrape date)", kw_1: "Count"},
                     title="Keyword count per Date (scrape date) - Total amount of keyword occurences")
             # overriding Plotly variables since single traced plots won't have a legend visible as default
@@ -138,13 +155,18 @@ class GraphManager():
 
         else:
 
-            fig = px.line(df, x=x_value, y=[kw_1, kw_2], markers=False, 
+            fig = px.scatter(df, x=x_value, y=[kw_1, kw_2], 
                     labels={"date": "Date (scrape date)", "value": "Count"},
                     title="Keyword count per Date (scrape date) - Total amount of keyword occurences")
             
         saved_files = []
+
+        # Calculate the total number of exports for tqdm
+        tot_exports = len(self.plot_templates)
+
+        # Wrap the loop with tqdm
+        for template in tqdm(self.plot_templates, total=tot_exports, bar_format=self.custom_bar, ascii=" =", leave=False):
         
-        for template in self.plot_templates:
             fig.update_layout(template=template, legend_title="Keyword")
 
             # Save the chart as an HTML file
@@ -167,29 +189,32 @@ class GraphManager():
         # Create a stacked bar chart with Plotly Express
         fig = px.bar(df, x=x_value, y="count", color="category", labels={"category": "Category"})
         fig.update_layout(title="Top Categories per Domain - Total amount of categorized articles",
-                      xaxis_title="Categories per Domain",
-                      yaxis_title="Article Count")
+                    xaxis_title="Categories per Domain",
+                    yaxis_title="Article Count")
         
         saved_files = []
+
+        # Calculate the total number of exports for tqdm
+        tot_exports = len(self.plot_barmodes) * len(self.plot_templates)
         
-        for barmode in self.plot_barmodes:
-            for template in self.plot_templates:
+        # Wrap the outer loop with tqdm
+        for barmode, template in tqdm(itertools.product(self.plot_barmodes, self.plot_templates), total=tot_exports, bar_format=self.custom_bar, ascii=" =", leave=False):
             
-                # Customize the layout
-                fig.update_layout(
-                    barmode=barmode,
-                    template=template
-                )
-                
-                # Save the chart as an HTML file
-                dirname = self.export_dir
-                file_ext = self.file_ext
-                filename = "categories_by_domain_graph"
-                barmode_style = f"_{barmode}"
-                template_style = f"_{template}"
-                file_path = f"{dirname}{filename}{barmode_style}{template_style}{file_ext}"
-                pyo.plot(fig, filename=file_path, auto_open=False)
-                saved_files.append(f"Chart saved to '{file_path}'")
+            # Customize the layout
+            fig.update_layout(
+                barmode=barmode,
+                template=template
+            )
+            
+            # Save the chart as an HTML file
+            dirname = self.export_dir
+            file_ext = self.file_ext
+            filename = "categories_by_domain_graph"
+            barmode_style = f"_{barmode}"
+            template_style = f"_{template}"
+            file_path = f"{dirname}{filename}{barmode_style}{template_style}{file_ext}"
+            pyo.plot(fig, filename=file_path, auto_open=False)
+            saved_files.append(f"Chart saved to '{file_path}'")
 
         return saved_files
 
@@ -215,7 +240,12 @@ class GraphManager():
 
         saved_files = []
 
-        for template in self.plot_templates:
+        # Calculate the total number of exports for tqdm
+        tot_exports = len(self.plot_templates)
+
+        # Wrap the loop with tqdm
+        for template in tqdm(self.plot_templates, total=tot_exports, bar_format=self.custom_bar, ascii=" =", leave=False):
+
             fig.update_layout(showlegend=True, template=template)
 
             # Save the chart as an HTML file

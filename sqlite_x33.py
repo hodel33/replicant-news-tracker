@@ -1,11 +1,8 @@
 import sqlite3 as sql
 
-
 class SQLiteDBManager:
-    """A simple & clean SQLite Database Context Manager which makes it possible to 
-    import the class & outer function execute() into another module (for example main.py) 
-    with the import statement "import sql_mgr as sql" and then you'll be able to write 
-    sql.execute(query), where "query" is the actual SQL query.
+    """A streamlined SQLite Database Context Manager that makes it easy to run SQL queries. The module includes an outer execute() function, allowing SQL commands to be run from other 
+    modules via "import sql_mgr as sql". In practice, you can use sql.execute(db, query), where 'db' specifies the database and 'query' holds the SQL query string. Have fun! /hodel33 & dyaland
     """
 
     def __init__(self, db_file_path:str):
@@ -28,10 +25,9 @@ class SQLiteDBManager:
      
     def execute_query(self, query:str):
         self.cursor.execute(query)
-        return self.cursor.fetchall()  # cursor.fetchall object -> if SELECT (viewing data), None object if INSERT/UPDATE/DELETE (editing data)
-
+        # Returns the result of a SELECT query, or None if the query was an INSERT/UPDATE/DELETE command
+        return self.cursor.fetchall()
 
 def execute(filename:str, query:str):
-
     with SQLiteDBManager(filename) as sql:
         return(sql.execute_query(query))

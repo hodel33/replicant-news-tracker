@@ -4,6 +4,7 @@
 /Stuff/*
 *.md
 *.pdf
+*.db
 @test.py
 scraper_log.txt
 scheduled_scraper.txt
