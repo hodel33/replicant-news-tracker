@@ -77,7 +77,9 @@ After launching the application, you'll be greeted by the main menu where you ca
   1. Specify the pagination level you wish to scrape, choosing a number between 1 and 15.
   2. The scraping process will commence, and the scraped data will be stored in a local database.
 
-![Scrape Screenshot](readme_screens/scrape.png)
+![Scrape Screenshot 1](readme_screens/scrape_1.png)
+
+![Scrape Screenshot 2](readme_screens/scrape_2.png)
 
 ---
 
