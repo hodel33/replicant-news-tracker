@@ -23,7 +23,7 @@ Replicant News Tracker is a terminal-based app designed to provide insightful an
 
 ## ⚙️ Installation
 
-### Prerequisites
+### 🛠️ Prerequisites
 
 1. 🐍 **Python**: This application is written in Python. It is recommended to have the latest version of Python installed. You can download it from [Python's official website](https://www.python.org/downloads/).
 
@@ -31,7 +31,7 @@ Replicant News Tracker is a terminal-based app designed to provide insightful an
 
 3. 🔍 **SQLite Extension (Optional)**: For easier overview and editing of SQLite databases, it's good to have an SQLite extension. [@yy0931's SQLite3 Editor for VSCode](https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor) is highly recommended.
 
-### Steps
+### ⬇️ Steps
 
 1. **Clone the Repository**:  
    Clone this GitHub repository to your local machine.
